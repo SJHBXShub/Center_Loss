@@ -1,0 +1,450 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "",
+    "version" : "1.0.0",
+    "title" : "Login, Register, Logout, ForgetPassword, GetVerificationCode"
+  },
+  "paths" : {
+    "/login" : {
+      "post" : {
+        "tags" : [ "Login" ],
+        "summary" : "https://1208489330827006.cn-shanghai.fc.aliyuncs.com/2016-08-15/proxy/FunDemo1/Login/",
+        "description" : "用户登录",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "Login",
+          "description" : "<pre> 前端：<br /> 前端自动登录<br /> * 当user之前登陆过，再次以访问时，前端先判断cookie中是否存在nickname：<br /> .  - 如果存在，则前端调用login api进行登录，此时登录使用存在cookie中的token。如果登录成功，则跳转到对应的网页；如果登录失败，则显示未登录即可(此时不用让用户去登录)<br /> .  - 如果不存在，则显示未登录即可(此时不用让用户去登录)<br />\n前端主动登录<br /> * 此种情况下，用户通过用户名密码登录<br /> * 用户登录成功后，跳转到之前页面<br />\n后端：<br /> * 后端先尝试通过token登录：<br /> .  - 如果成功 返回200<br /> .  - 若失败则进一步通过邮箱和密码进行登录<br /> * 无论哪种方式，若登录成功后端都会发送token给前端<br /> * 如果用户选择了10天免登录，则token的有效期会伴随着每次登录向后自动延长10天。当两次登录时间间隔超过10天，则token自动失效。若用户未选择免登陆，则token有效期为4小时。<br />\n</pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Login"
+          }
+        } ],
+        "responses" : {
+          "422" : {
+            "description" : "登录失败, 错误原因: <br /> EMAIL_NOT_EXIST;  <br />PASSWORD_INCORRECT",
+            "schema" : {
+              "$ref" : "#/definitions/422_EMAIL_NOT_EXIST"
+            }
+          },
+          "200" : {
+            "description" : "登录成功<br /> * 后端还会自动添加token到cookie中",
+            "schema" : {
+              "$ref" : "#/definitions/Login_response_200"
+            }
+          },
+          "401" : {
+            "description" : "登录失败, 错误原因: <br /> TOKEN_INVALID",
+            "schema" : {
+              "$ref" : "#/definitions/401_TOKEN_INVALID"
+            }
+          }
+        }
+      }
+    },
+    "/logout" : {
+      "post" : {
+        "tags" : [ "Logout" ],
+        "summary" : "https://1208489330827006.cn-shanghai.fc.aliyuncs.com/2016-08-15/proxy/FunDemo1/Logout/",
+        "description" : "用户登出",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "Logout",
+          "description" : "<pre> 当用户点击登出后<br /> 后端：<br /> - 更新版本号，从而使得token失效 <br /> 前端post：<br /> - 401 因为token失效 不能执行登出操作。通过弹窗方式展示<br/> - 200 登出成功 转换到未登录状态<br /> - 500 因为后端服务器原因失败 用户需要再次执行一次<br /> </pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Logout"
+          }
+        } ],
+        "responses" : {
+          "401" : {
+            "description" : "因为token失效 不能执行登出操作,错误原因: <br /> TOKEN_INVALID",
+            "schema" : {
+              "$ref" : "#/definitions/401_TOKEN_INVALID"
+            }
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>登出成功"
+          }
+        }
+      }
+    },
+    "/ChangeNickname" : {
+      "post" : {
+        "tags" : [ "Changenickname" ],
+        "summary" : "API address TBD",
+        "description" : "用户更改用户名",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "ChangeNickname",
+          "description" : "<pre>\n用户提交新的用户名，此操作一定是在用户登录情况下操作<br />\n后端：<br /> - 更新用户名 <br /> - 更新token <br />\n前端pre：<br /> - 需要检测用户名是否合法 & 用户名是否与之前一致<br />\n前端post:<br /> - 401 跳转到登录页面<br /> - 200 刷新更改之后的页面，此页面展示新的用户名<br /> - 409 让不用重新输入用户名 并 重新提交\n</pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/ChangeNickname"
+          }
+        } ],
+        "responses" : {
+          "401" : {
+            "description" : "因为token失效 不能执行登出操作,错误原因: <br /> TOKEN_INVALID",
+            "schema" : {
+              "$ref" : "#/definitions/401_TOKEN_INVALID"
+            }
+          },
+          "409" : {
+            "description" : "新的用户名已经存在数据库中",
+            "schema" : {
+              "$ref" : "#/definitions/409_NICKNAME_EXIST"
+            }
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>更改成功"
+          }
+        }
+      }
+    },
+    "/ChangePassword" : {
+      "post" : {
+        "tags" : [ "ChangePassword" ],
+        "summary" : "API address TBD",
+        "description" : "用户在设置中更改密码",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "ChangePassword",
+          "description" : "<pre>\n用户提交新的密码，此操作一定是在用户登录情况下操作<br />\n前端pre：<br /> * 判断新旧密码是否一样，若一样，需要告知用户<br /> * 判断新密码是否符合规范<br />\n后端：<br /> * 验证token 以及 旧密码是否正确<br /> * 更新新的密码 <br /> * 更细token<br />\n前端post：<br /> * 提示用户更改结果 <br /> </pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/ChangePassword"
+          }
+        } ],
+        "responses" : {
+          "401" : {
+            "description" : "错误原因: <br /> TOKEN_INVALID <br />",
+            "schema" : {
+              "$ref" : "#/definitions/401_TOKEN_INVALID"
+            }
+          },
+          "422" : {
+            "description" : "错误原因: <br /> OLD_PASSWORD_INCORRECT",
+            "schema" : {
+              "$ref" : "#/definitions/422_OLD_PASSWORD_INCORRECT"
+            }
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>更改成功"
+          }
+        }
+      }
+    },
+    "/register" : {
+      "post" : {
+        "tags" : [ "Register" ],
+        "summary" : "https://1208489330827006.cn-shanghai.fc.aliyuncs.com/2016-08-15/proxy/FunDemo1/Register/",
+        "description" : "用户注册",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "register",
+          "description" : "<pre> 用户通过用户名 邮箱 手机号(可选) 密码进行注册。用户名，邮箱是唯一的。但是同一个手机号可以注册多个账号。<br />\n前端pre：<br /> - 验证邮箱 手机号 密码是否符合规范<br/>\n后端：<br /> 通过验证用户名 邮箱 判断是否可以注册<br/>\n前端post：<br /> - 根据status做出操作<br/> - 409 提示用户错误信息 <br/> - 200 跳转到登录页面 <br/> </pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Register"
+          }
+        } ],
+        "responses" : {
+          "409" : {
+            "description" : "错误原因: <br/>EMIAL_EXIST<br/>NICKNAME_EXIST",
+            "schema" : {
+              "$ref" : "#/definitions/409_NICKNAME_EXIST"
+            }
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>register success"
+          }
+        }
+      }
+    },
+    "/forget_password" : {
+      "post" : {
+        "tags" : [ "Forget_password" ],
+        "summary" : "API address TBD",
+        "description" : "忘记密码",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "Forget_password",
+          "description" : "<pre> 用户需要输入用邮箱地址,验证码和新的密码<br /> 后端：<br /> - 后端需要验证邮箱以及验证码是否正确&验证新旧密码是否一样<br/> 前端pre：<br /> - 验证密码 邮箱 的合法性 - 获取验证码 前端post： <br /> - 422/409 提示用户错误信息 <br/> - 200 跳转到登录页面 <br/> </pre>",
+          "schema" : {
+            "$ref" : "#/definitions/forget_password"
+          }
+        } ],
+        "responses" : {
+          "422" : {
+            "description" : "重置失败, 错误原因: <br /> EMAIL_NOT_EXIST;  <br />VERIFICATION_CODE_INCORRECT",
+            "schema" : {
+              "$ref" : "#/definitions/422_EMAIL_NOT_EXIST"
+            }
+          },
+          "409" : {
+            "description" : "重置失败, 错误原因: <br /> NEW_PASSWORD_CONFLICT",
+            "schema" : {
+              "$ref" : "#/definitions/409_NEW_PASSWORD_CONFLICT"
+            }
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>修改密码成功"
+          }
+        }
+      }
+    },
+    "/Get_verification_code" : {
+      "post" : {
+        "tags" : [ "Get_verification_code" ],
+        "summary" : "API address TBD",
+        "description" : "获取验证码",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "get_verification_code",
+          "description" : "获取验证码type有一下几种<br /> 1001 -> 用户忘记密码需要重置 <br /> 1002 -> 其他 <br /> 根据不同的type，后端需要发送不同的邮件内容。<br/> 后端：<br /> 后端需要判断邮箱是否存在 若不存在 返回401。在邮箱存在情况下，发送失败返回409<br/> - 401 邮箱不存在 <br/> - 409 发送失败 重新发送<br/> - 200 修改成功 <br/> 前端：<br /> - 根据status做出操作<br/> - 401 提示用户错误信息 邮箱不存在<br/> - 409 发送失败 重新发送<br/> - 200 提示用户发送验证码成功 <br/> </pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/get_verification"
+          }
+        } ],
+        "responses" : {
+          "422" : {
+            "description" : "错误原因: <br /> EMAIL_NOT_EXIST",
+            "schema" : {
+              "$ref" : "#/definitions/422_EMAIL_NOT_EXIST"
+            }
+          },
+          "500" : {
+            "description" : "后端执行代码不成功"
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>发送验证码成功"
+          }
+        }
+      }
+    },
+    "/Delete_account" : {
+      "delete" : {
+        "tags" : [ "Delete_account" ],
+        "summary" : "https://1208489330827006.cn-shanghai.fc.aliyuncs.com/2016-08-15/proxy/FunDemo1/Register/",
+        "description" : "注销账号",
+        "consumes" : [ "json" ],
+        "produces" : [ "json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "Delete_account",
+          "description" : "<pre> 通过邮箱 和 密码进行注销<br /> 后端：<br /> - 验证邮箱 密码是否匹配 若不匹配返回401(description具体到case1 case2)<br/> - 否则返回200 <br/> </pre>",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Delete_account"
+          }
+        } ],
+        "responses" : {
+          "401" : {
+            "description" : "(后端不返回json文件)<br/>删除账号不成功"
+          },
+          "400" : {
+            "description" : "(后端不返回json文件)<br/> 账号信息不完整"
+          },
+          "500" : {
+            "description" : "(后端不返回json文件)<br/> 服务器内部错误"
+          },
+          "200" : {
+            "description" : "(后端不返回json文件)<br/>删除账号成功"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "Login_response_200" : {
+      "required" : [ "nickname" ],
+      "properties" : {
+        "nickname" : {
+          "type" : "string",
+          "example" : "jiy0101"
+        }
+      }
+    },
+    "422_EMAIL_NOT_EXIST" : {
+      "required" : [ "substatus_instruction" ],
+      "properties" : {
+        "substatus_instruction" : {
+          "type" : "string",
+          "example" : "EMAIL_NOT_EXIST"
+        }
+      }
+    },
+    "401_TOKEN_INVALID" : {
+      "required" : [ "substatus_instruction" ],
+      "properties" : {
+        "substatus_instruction" : {
+          "type" : "string",
+          "example" : "TOKEN_TOKEN_INVALID"
+        }
+      }
+    },
+    "422_OLD_PASSWORD_INCORRECT" : {
+      "required" : [ "substatus_instruction" ],
+      "properties" : {
+        "substatus_instruction" : {
+          "type" : "string",
+          "example" : "OLD_PASSWORD_INCORRECT"
+        }
+      }
+    },
+    "409_NICKNAME_EXIST" : {
+      "required" : [ "substatus_instruction" ],
+      "properties" : {
+        "substatus_instruction" : {
+          "type" : "string",
+          "example" : "NICKNAME_EXIST"
+        }
+      }
+    },
+    "409_NEW_PASSWORD_CONFLICT" : {
+      "required" : [ "substatus_instruction" ],
+      "properties" : {
+        "substatus_instruction" : {
+          "type" : "string",
+          "example" : "NEW_PASSWORD_CONFLICT"
+        }
+      }
+    },
+    "Login" : {
+      "required" : [ "email_address", "password", "flag_free_login", "user_agent", "ip_address" ],
+      "properties" : {
+        "email_address" : {
+          "type" : "string",
+          "example" : "test@example.com"
+        },
+        "password" : {
+          "type" : "string",
+          "example" : "test"
+        },
+        "ip_address" : {
+          "type" : "string",
+          "example" : "43.23.434.545"
+        },
+        "auto_login" : {
+          "type" : "boolean",
+          "example" : true
+        },
+        "user_agent" : {
+          "type" : "string",
+          "example" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) App ..."
+        }
+      }
+    },
+    "Delete_account" : {
+      "required" : [ "email_address", "password" ],
+      "properties" : {
+        "email_address" : {
+          "type" : "string",
+          "example" : "test@example.com"
+        },
+        "password" : {
+          "type" : "string",
+          "example" : "test"
+        }
+      }
+    },
+    "ChangePassword" : {
+      "required" : [ "new_password", "old_password" ],
+      "properties" : {
+        "old_password" : {
+          "type" : "string",
+          "example" : "daifniaf"
+        },
+        "new_password" : {
+          "type" : "string",
+          "example" : "dnianfa"
+        }
+      }
+    },
+    "ChangeNickname" : {
+      "required" : [ "new_nickname" ],
+      "properties" : {
+        "new_nickname" : {
+          "type" : "string",
+          "example" : "daifniaf"
+        }
+      }
+    },
+    "Logout" : {
+      "required" : [ "token" ],
+      "properties" : {
+        "token" : {
+          "type" : "string",
+          "example" : "dnaindia2232431dafaf"
+        }
+      }
+    },
+    "forget_password" : {
+      "required" : [ "email_address", "new_password", "verification_code" ],
+      "properties" : {
+        "email_address" : {
+          "type" : "string",
+          "example" : "test@example.com"
+        },
+        "new_password" : {
+          "type" : "string",
+          "example" : "test"
+        },
+        "verification_code" : {
+          "type" : "string",
+          "example" : "23412"
+        }
+      }
+    },
+    "get_verification" : {
+      "required" : [ "email_address", "type" ],
+      "properties" : {
+        "email_address" : {
+          "type" : "string",
+          "example" : "test@example.com"
+        },
+        "type" : {
+          "type" : "string",
+          "example" : 1002
+        }
+      }
+    },
+    "Register" : {
+      "required" : [ "nickname", "email_address", "password" ],
+      "properties" : {
+        "nickname" : {
+          "type" : "string",
+          "example" : "jyr0101"
+        },
+        "email_address" : {
+          "type" : "string",
+          "example" : "test@example.com"
+        },
+        "phone" : {
+          "type" : "string",
+          "example" : 15988494320
+        },
+        "password" : {
+          "type" : "string",
+          "example" : "test"
+        }
+      }
+    }
+  }
+}
